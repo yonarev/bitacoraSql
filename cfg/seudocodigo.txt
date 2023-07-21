@@ -1,0 +1,324 @@
+codigo en un solo archivo html que:
+tengo el combo box una una lista de Titulos
+que tiene una lista de titulos
+<select name="listaTitulos" id="listaTitulos" placeholder="lista de titulos"></select>
+necesito que al seleccionar un 'titulo' del combobox  cargue una funcion
+function rerornaIdTitulo(idUsu,titulo)
+debe retornar esta funcion el valor del campo 'idTitulo' correspondiente
+a una tabla sql 
+1	idUsu	varchar(30)	
+2	fecha	varchar(20)	
+3	hora	time			
+4	idTitulo Primaria	varchar(30)	
+5	titulo
+-----------------
+codigo en una fucnion  que 
+retorne el valor del campo 'idTit'
+de la tabla sql
+-----------------------
+listaTitulosUsuario
+codigo en un solo archivo html con
+una funcion que encuentre los titulos del usuario
+siendo idUsu = idActivo() //esta funcion ya esta lista.
+la funcion a crear debe llamarse 'listaTitulosUsuario(idUsu)'
+y que en base a  idUsu de una tabla sql llamada 'titulos'
+con los campos:
+idUsu	varchar(30)	
+titulo	varchar(50)	
+con un archivo php llamado 'lista_titulos_usuario.php'
+con conexion PDO ya establecida con  
+require_once "./conexion_servidor.php";
+el php debe retornar la lista de titulos con JSON solo de este usuario 
+con idUsu y la funcion js debe llenar los datos 
+cargardolos en el combobox 
+<select name="listaTitulos" id="listaTitulos" placeholder="lista de titulos"></select>
+--------------------------
+listaTitulosUsuario
+codigo en un solo archivo html con
+una funcion que encuentre los titulos del usuario
+siendo idUsu = idActivo() //esta funcion ya esta lista.
+la funcion a crear debe llamarse 'listaTitulosUsuario(idUsu)'
+y que en base a  idUsu de una tabla sql llamada 'titulos'
+con los campos:
+idUsu	varchar(30)	
+titulo	varchar(50)	
+con un archivo php llamado 'lista_titulos_usuario.php'
+con conexion PDO ya establecido con  
+require_once "./conexion_servidor.php";
+el php debe retornar la lista de titulos JSON solo de este usuario 
+con idUsu y la funcion js debe llenar los datos 
+cargardolos en el combobox 
+<select name="listaTitulos" id="listaTitulos" placeholder="lista de titulos"></select>
+-------------------
+necesito agregar un boton con una funcion 
+llamada borrarTituloUsuario(idUsu,titulo) 
+en base los datos idUsu y titulo
+de una tabla sql llamada titulos con un 
+archivo php llamado borra_titulo_usuario.php 
+con conexion establecida PDPO 
+require_once "./conexion_servidor.php";
+con POST
+y que tambien lo elimine de la lista actual 
+<select name="listaTitulos" id="listaTitulos" placeholder="lista de titulos"></select>
+
+y los despliegue en una lista de titulos llamada 
+function titulosUsuario(idUsu)
+--------------------
+GRABA DESARROLLO
+codigo en un solo archivo html 
+que con un boton input submit
+grabe en una tabla sql
+llamada 'desarrollo' con los campos
+id	varchar(20),textoDes varchar(255),	idUsu varchar(20)	
+idTit	varchar(20)
+por medio del envio de los datos con submit 
+y de un formulario con POST a un archivo php
+llamado 'graba_desarrollo_usuario.php'
+require_once "./conexion_servidor.php";
+con conexion establecida PDO llamada 'conexion' 
+require_once "./conexion_servidor.php";
+el envio de los datos debe ser en json con la estructura
+envio={
+    'id'=id,
+    'idUsu'=idUsu,
+    'idTit'=idTit,
+    'textoDes'=textoDes
+}
+donde id=indiceAhora() el idUsuario=idActivo()
+y el idTit=obtieneTituloActivoLocal() y 
+textDes es 
+<textarea id='textoDes' name="textoDes" placeholder="Ingresa el texto a desarrollar"></textarea>
+el formulario es:
+  <!-- FORMULARIO -->
+      <div id="seccionFormulario" style="display: none;">
+        <form id="formDesarrollo" method="POST" action="./presenta_desarrollo.php">
+          <div id="seccionTitulos">
+            <select onchange="obtenerIdTitulo()" name="listaTitulos" id="listaTitulos" placeholder="lista de titulos"></select>
+            <button type="button" onclick="presentaSeccionTitulo();">+</button>
+            <button type="button" onclick="ocultaSeccionTitulo();">-</button>
+            <button type="button" onclick="evitarEnvioFormulario(event);">e</button>
+            <button onclick="borrarTituloUsuario(event)">B</button>
+          </div>
+          <div id="seccionTitulo" hidden>
+            <input id="inputTitulo" type="text" >
+            <button id="btnGrabaTituloNuevo" onclick="grabaTitulo(event)">Grabar titulo nuevo</button>
+          </div>
+          <textarea id='textoDes' name="textoDes" placeholder="Ingresa el texto a desarrollar"></textarea>
+          <div class='seccionBotones'>
+            <input id="btnGragaDesarrollo" type="submit" value="Guardar" style="cursor: pointer;">
+            <button onclick="grabaDesarrolloUsuario(event)">graba el desarrollo</button>
+            <button id="btnEliminaDesarrollo" onclick="borrarTituloUsuario(event)" class="eliminar-btn">Eliminar</button>
+          </div>
+        </form>
+      </div>
+
+es necesario que si el registro ya fue guardado con los campos indicados 
+entonces al grabar nuevamente sobrescriba 'txtDes'
+----------------------
+validar que $idUsu e $idTit si ya existen y $txtDes ya tiene contenido entonces se sobrescriba solo en 'txtDes' 
+con una funcion llamada
+grabaTablaDesarrollo().
+el envio de los datos es
+
+codigo para una funcion llamada obtenerIdTitulo(idUsu)
+en base a una lista de titulos: 
+<select name="listaTitulos" id="listaTitulos" placeholder="lista de titulos"></select>
+donde el 'titulo' seleccionado se debe buscar en una tabla sql
+llamada 'titulos' con campos: 'idUsu' e 'idTitulo 'de manera que
+retorne el 'idTitulo' en base a la busqueda donde se cumpla 
+'idUsu' y el 'titulo' (enviados por la funcion). 
+la busqueda se debe hacer con
+un archvio php llamado 'encuentra_id_titulo.php' 
+require_once "./conexion_servidor.php";
+con conexion PDO y debe
+retornar el 'idTitulo'
+---------------------------
+codigo para una funcion llamada cargaDesarrolloUsuario()
+que traiga desde una tabla sql por medio de un archivo php 
+llamada carga_desarrollo_usuario.php con conexion PDO establecida
+require_once "./conexion_servidor.php";.
+la funcion envia los datos json  let envio = {
+      'idUsu': idUsu,
+      'idTit':idTit,
+    };
+    y el archivo php devuelve  'textoDes'
+siendo los campos de la tabla 'desarrollo':  'id','idUsu','idTit',
+'textoDes.
+---------------------------
+codigo en un solo archivo html con
+una funcion llamada eliminaDesarrolloUsuario(idUsu,idTit) que 
+elimine de la tabla sql llamada 'desarrollo' 
+y elimine de la tabla sql llamada 'titulos' 
+enviandole a un archivo php llamado elimina_desarrolloUsuario.php 
+los siguientes datos 'idUsu' 'idTit'
+el archivo php debe encontrar en la tabla desarrollo 
+el 'idTit' y el 'idUsu' y ese registro eliminarlo.
+tambien debe en la tabla 'titulos' debe encontrar en la tabla desarrollo 
+el 'idTit' y el 'idUsu' y ese registro eliminarlo.
+el archivo php tiene una conexion PDO ya establecida con 
+require_once "./conexion_servidor.php";
+
+necesito una funcion que grabe en 2 tablas sql una llamada desarrollo 
+y la otra llamada titulos en ambas estan los campos idUsu e idTit 
+que son los datos que enviaremos con la funcion llamada 
+grabaTituloYdesarrollo(event) que te los dare despues.....
+debe grabar en la tabla titulos agregando idTit y debe grabar 
+en la tabla desarrollo sobrescribiendo textoDes
+------------
+
+codigo en un solo archivo html que genere 
+una tabla sql con la siguiente estructura 
+id varchar(20) ,idUsu varchar(20),idTit varchar(20),titulo varchar(100),
+desarrollo text.
+debe enviar a un archivo php llamado crea_tabla_titulo_desarrollo 
+con una conexion PDO establecida como $conexion con 
+require_once "./conexion_servidor.php";
+
+CREATE TABLE IF NOT EXISTS tabla_titulo_desarrollo (
+    id VARCHAR(20),
+    idUsu VARCHAR(20),
+    idTit VARCHAR(20),
+    titulo VARCHAR(100),
+    desarrollo TEXT
+)";
+
+codigo en un solo archivo html que
+con una funcion llamada grabaDesarrollo(id,idUsu,idTit,titulo,desarrollo) que
+grabe en una tabla sql con POST con la
+siguiente estructura 
+    id VARCHAR(20),
+    idUsu VARCHAR(20),
+    idTit VARCHAR(20),
+    titulo VARCHAR(100),
+    desarrollo TEXT
+que estaran en los parametros de entrada de la funcion 
+y debe enviar por POST  a un archivo php 
+llamado graba_desarrollo.php con una conexion PDO 
+establecida como $conexion con 
+require_once "./conexion_servidor.php";
+debe encontrar idUsu y idTit y 
+sobreescribir siempre en el campo titulo y en el campo desarrollo
+los datos de titulo,desarrollo jamas se ingresaran vacios
+
+----
+codigo en un solo archivo html que
+con una funcion llamada grabaNuevoTitulo(id,idUsu,idTit,titulo,desarrollo) que
+grabe en una tabla sql con POST con la
+siguiente estructura 
+    id VARCHAR(20) ,
+    idUsu VARCHAR(20),
+    idTit VARCHAR(20),
+    titulo VARCHAR(100),
+    desarrollo TEXT
+que estaran en los parametros de entrada de la funcion 
+y debe enviar por POST  a un archivo php 
+llamado graba_nuevo_titulo.php con una conexion PDO 
+establecida como $conexion con 
+require_once "./conexion_servidor.php";
+debe grabar por primera vez con los campos entregados 
+id, idUsu, idTit y desarrollo
+----------
+codigo para una funcion llamada obtenerIdUsuario(usuario)
+para encontrar  en una tabla sql llamada 'usuarios' 
+con los campos 
+idUsu	varchar(25)		
+usuario	varchar(255)	
+y que con una archivo php llamado obtener_id_con_mail.php
+con conexion establecida llamada $conexion con PDO
+require_once "./conexion_servidor.php"; // Archivo de conexión a la base de datos
+y que retorne el php el 'idUsu' en base al 'usuario' enviado 
+con la funcion
+---------------
+EDITA Titulo 
+codigo de una funcion llamada actualizaTitulo() js que
+actualice una tabla sql llamada `tabla_titulo_desarrollo`
+por medio de un archivo php llamada 'actualiza_titulo.php' 
+con POST con una conexion establecida como $conexion con  
+require_once "./conexion_servidor.php";
+con PDO. La funcion le envia los siguientes datos:
+idUsu, idTit, titulo y php debe primero encontrar 
+la fila o registro de la tabla con idUsu y idTit y actualizar 
+el titulo si no se esta repitiendo pus si se repite el nombre 
+del titulo no debe hacerlo
+---------------
+GRABA ARCHIVO BACKP 
+codigo en un solo archivo html que lea la tabla sql 
+de una funcion llamada obtieneTablaJson() por medio de un archivo php 
+llamado envia_tabla_Json.php que lea la tabla sql con una conexion 
+llamada $conexion con require_once "./conexion_servidor.php" y 
+envie los datos en formato json de la tabla llamada `tabla_titulo_desarrollo
+los registros con los campos:id ,idUsu ,idTit ,titulo , desarrollo 
+con la estructura:
+tablaDesarrolloUsuarios=[{
+  id ,idUsu ,idTit ,titulo,desarrollo
+}]
+la funcion debe leer y cargar en localstorage la informacion recibida
+----------------
+FILTRO DATOS POR USUARIO JSON
+ahora con los datos en local storage con key 'tablaDesarrolloUsuarios' 
+generar una funcion llamada filtroUsuariosDesarrollo() que
+debe filtrar por cada usuario con idUsu 
+y guardar en local storage con la siguiente estructura:
+'idUsu'=[{
+  idTit ,titulo, desarrollo
+}]
+--------------------
+LEE JSON USUARIOS
+codigo en un solo archivo html que lea la tabla sql 
+de una funcion llamada obtieneUsuariosJson()
+por medio de un archivo php 
+llamado envia_usuarios_Json.php que lea la tabla sql 'usuarios' 
+con una conexion llamada $conexion con PDO con require_once "./conexion_servidor.php" y 
+envie los datos en formato json de los campos
+idUsu,usuario,gps,psw,accesos,obs
+con la estructura:
+tablaUsuarios=[{
+  idUsu,usuario,gps,psw,accesos,obs
+}]
+la funcion debe leer y cargar en localstorage la informacion recibida
+----------------
+GRABA BASE COMPLETA EN Archivo
+codigo en un solo archivo html que grabe en disco duro un archivo json llamado 
+baseSql.Json con blop por medio de una funcion llamada grabaArchivoBaseSql() 
+a partir de los datos en local storage. debe grabar los KEYS: 'usuarios' y 
+'tablaDesarrolloUsuarios' con 
+key= baseSql=[{
+  tablaUsuarios:[{idUsu,usuario,gps,psw,accesos,obs}],
+  tablaDesarrolloUsuarios:[{id ,idUsu ,idTit ,titulo,desarrollo}]
+}]
+siendo tablaUsuarios=[{
+  idUsu,usuario,gps,psw,accesos,obs
+}]
+y tablaDesarrolloUsuarios= [{
+  id ,idUsu ,idTit ,titulo,desarrollo
+}]
+---------------------
+CARGAR BASE DE DATOS CON ARCHIVO JSON
+codigo en un solo archivo html con una funcion llamada 
+cargaBaseConJson() que cargue un archivo json de disco duro 
+ en la raiz llamado baseSql.Json con la estructura: 
+=[{
+  tablaUsuarios:[{idUsu,usuario,gps,psw,accesos,obs}],
+  tablaDesarrolloUsuarios:[{id ,idUsu ,idTit ,titulo,desarrollo}]
+}] lo cargue en local storage
+------------------------
+GRABAR DE JSON CON PHP EN LA BASE DE DATOS
+codigo en un solo archivo html con una funcion llamada
+grabaJsonBaseDatos() que grabe desde local storage 
+tablaUsuarios=[{
+  idUsu,usuario,gps,psw,accesos,obs
+}]
+y tablaDesarrolloUsuarios= [{
+  id ,idUsu ,idTit ,titulo,desarrollo
+}] 
+enviando por POST a un archivo PHP llamado 
+graba_json_base_datos.php con una con una conexion llamada $conexion 
+con PDO con require_once "./conexion_servidor.php"
+y que escriba directamente en las tablas sql 'usuario'
+y 'tabla_titulo_desarrollo' con los mismos campos los datos 
+enviados por la funcion desde local storage
+---------------------
+codigo en un solo archivo html con una funcion llamada
+activaBotones(activa) que oculte o presente la seccion 
+<section class="seccionBotonesTitulos" >
+

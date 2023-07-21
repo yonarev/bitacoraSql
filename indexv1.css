@@ -1,0 +1,192 @@
+body {
+    display: flex;
+    flex-direction: row;
+    font-family: arial;
+    background-image: url('./img/muro.jpg'); /* Ruta de la imagen de fondo */
+    background-repeat: no-repeat;
+    background-size: 100vw 100vh;
+    background-position: top left;
+    font-size: 4vw;
+    margin: 0;
+    padding: 0;
+}
+/* Estilos para el menú y submenú */
+#seccionFormulario {
+  position: fixed;
+  /* position: relative;  */
+  top: 9vw !important;
+  bottom: 15vw; /* Ajusta esta altura según tus necesidades */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 95%;
+  max-width: 95vw;
+  background-color: #624545;
+  margin: 0 auto;
+}
+#menu-icon {
+  height: 8vw;
+  font-size: 8vw;
+  margin-bottom: 3vw !important;
+  cursor: pointer;
+  /* width: 12vw; */
+}
+#menu {
+  display: flex;
+  font-size: 4vw;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 40vw;
+  padding: 3vw;
+  z-index: 1;
+  transition: width 0.5s, padding 0.5s;
+}
+#submenu {
+  font-size: 6vw;
+  display: none;
+  background-color: rgba(62, 53, 53, 0.4);
+  padding: 1vw;
+  transition: opacity 0.5s;
+}
+#submenu a {
+  font-size: 6vw;
+  display: block;
+  padding: 5px;
+  text-decoration: none;
+  color: rgb(255, 255, 255);
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Efecto de sombra */
+}
+#menu.active {
+  width: 50vw;
+  padding: 2vw;
+}
+#menu.active #submenu {
+  display: block;
+  opacity: 1;
+}
+#seccionTitulos{
+  font-size: 8vw;
+}
+.seccionMenuArriba {
+  display: flex;
+  align-items: center;
+}
+#menu-icon {
+  order: 1;
+}
+#userEmail{
+  font-size: 4vw;
+  font-family: Arial, Helvetica, sans-serif;
+  color: #171212 !important;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Efecto de sombra */
+  /* float: right; */
+  order: 2;
+  margin-left: auto;
+}
+
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 60vw;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  margin: 0 auto;
+}
+.modal-content {
+  background-color: rgba(62, 53, 53, 0.4);
+  margin: 0 auto;
+  padding: 1vw;
+  border: 1px solid #888;
+  width: 95vw;
+  height: 60vw;
+  text-align: center;
+  border-radius: 3vw;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Efecto de sombra */
+}
+.modal-content input{
+  font-size: 7vw;
+}
+.modal-content button{
+  font-size: 6vw;
+  margin: 2vw;
+}
+#formularioRegistro input{
+  width: 80vw;
+  margin: 0 auto;
+}
+.centrado{
+    display: flex;
+    margin: 0 auto;
+    text-align: center;
+    flex-direction: column;
+    flex-wrap: wrap;
+}
+footer {
+  position: fixed;
+  left: 0;
+  bottom: 0; 
+  width: 100%;
+  padding: 5px;
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+  height: 8vw !important;
+  margin-bottom: 1vw !important; 
+}
+footer #seccionMensajes {
+  display: flex;
+  flex-direction: column;
+  font-size: 5vw;
+  color: white;
+  align-items: center;
+  margin-bottom: 2w !important; /* Ajusta el valor según tu preferencia */
+}
+#seccionFormulario {
+  position: absolute;
+  /* position: fixed; */
+  top: 20vw !important;
+  bottom: 15vw; /* Ajusta esta altura según tus necesidades */
+  left: 50%;
+  transform: translateX(-50%);
+  width: 95%;
+  max-width: 95vw;
+  height: 80%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: transparent; /* Fondo totalmente transparente */
+}
+
+#formDesarrollo {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+textarea {
+  box-sizing: border-box;
+  background-color: rgba(104, 103, 103, 0.5); 
+  padding: 5vw;
+  margin-bottom: 5vw;
+  height: 100%;
+}
+#seccionFormulario button,
+#seccionFormulario input[type="submit"],
+#seccionFormulario input[type="button"],
+#seccionFormulario textarea {
+  cursor: pointer;
+}
+
+.seccionBotones {
+  all: 0;
+  text-align: center;
+}
+#btnGragaDesarrollo {
+  cursor: pointer;
+}

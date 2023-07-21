@@ -1,0 +1,99 @@
+body {
+  display: flex;
+  flex-direction: row;
+  font-family: Arial;
+  background-image: url('./img/slide/muro.jpg');
+  background-repeat: no-repeat;
+  background-size: 100% 100%;
+  background-position: top left;
+  font-size: 16px;
+  margin: 0;
+  padding: 0;
+}
+
+.oculto {
+  display: none;
+}
+
+#seccionPresentaUsuario {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.background-container {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  opacity: 0;
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-attachment: fixed;
+  background-size: cover;
+  transition: opacity 0.5s ease-in-out;
+}
+
+.boton-container {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 1;
+}
+
+#seccionTitulos {
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: column;
+}
+
+#listaTitulos {
+  font-size: 24px !important;
+  max-width: 95%;
+  width: 95%;
+}
+
+.seccionBotonesTitulos {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  max-width: 100%;
+  padding: 0;
+  margin: 0;
+}
+
+.seccionBotonesDatos {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  justify-items: center;
+  align-items: center;
+  align-content: center;
+  padding: 0;
+  margin: 0;
+}
+
+.seccionBotonesAudio {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  justify-items: center;
+  align-items: center;
+  align-content: center;
+  padding: 0;
+  margin: 0;
+}
+
+.btnTitulos {
+  font-size: 40px !important;
+  width: 140px;
+  height: 140px;
+  margin: 0 auto;
+  border-radius: 30px;
+  border: 1px groove;
+  background-color: #e5c0c0;
+}

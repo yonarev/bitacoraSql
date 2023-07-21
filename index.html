@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bitacora</title>
+    <link rel="icon" href="./img/icono.png" type="image/x-icon">
+    <link rel="stylesheet" href="./index.css">
+    <!-- <link rel="stylesheet" href="./formato.css"> -->
+  
+    <!-- PARA EL SLIDE -->
+    <script>
+      var slideInterval = null; // Variable para almacenar el intervalo del slide
+      var lista = []; // Lista de imágenes de fondo
+      var backgroundContainer = null; // Contenedor actual de la imagen de fondo
+      function slideFondo(opcion, tiempo) {
+          if (opcion) {
+              let listaJson = localStorage.getItem('listaSlide');
+              lista = JSON.parse(listaJson);
+              console.log("Slide de fondo activado:", lista);
+              if (lista && lista.length > 0 && !slideInterval) {
+                  ejecutaSlide(tiempo);
+              }
+          } else {
+              console.log("Slide de fondo desactivado");
+              clearInterval(slideInterval); // Detener el intervalo de slide
+              if (backgroundContainer) {
+                  backgroundContainer.parentNode.removeChild(backgroundContainer);
+                  backgroundContainer = null;
+              }
+              slideInterval = null; // Restablecer slideInterval a null para indicar que la animación está desactivada
+          }
+      }
+      
+      function ejecutaSlide(tiempo) {
+          let index = 0;
+          backgroundContainer = document.getElementById('background-container');
+          if (!backgroundContainer) {
+              backgroundContainer = document.createElement('div');
+              backgroundContainer.id = 'background-container';
+              backgroundContainer.classList.add('background-container');
+              document.body.appendChild(backgroundContainer);
+          }
+          backgroundContainer.style.backgroundImage = `url('${lista[0]}')`; // Establecer la primera imagen de fondo
+
+          slideInterval = setInterval(function () {
+              index = (index + 1) % lista.length;
+
+              // Crear un nuevo contenedor para la imagen de fondo actual
+              let newBackgroundContainer = document.createElement('div');
+              newBackgroundContainer.classList.add('background-container');
+              newBackgroundContainer.style.backgroundImage = `url('${lista[index]}')`;
+              // Insertar el nuevo contenedor debajo del contenedor actual
+              backgroundContainer.parentNode.insertBefore(newBackgroundContainer, backgroundContainer.nextSibling);
+              // Establecer la opacidad del nuevo contenedor a 0
+              newBackgroundContainer.style.opacity = 0;
+              // Realizar el fundido suave
+              setTimeout(function () {
+                  backgroundContainer.style.opacity = 0;
+                  newBackgroundContainer.style.opacity = 1;
+              }, 50); // Pequeña pausa antes de aplicar el fundido suave
+              // Eliminar el contenedor anterior después de completar el fundido suave
+              setTimeout(function () {
+                  if (backgroundContainer && backgroundContainer.parentNode) {
+                      backgroundContainer.parentNode.removeChild(backgroundContainer);
+                  }
+                  backgroundContainer = newBackgroundContainer;
+              }, 2000); // Tiempo de duración del fundido suave
+
+          }, tiempo * 1000);
+      }
+      
+      function grabaLocalListaArchivos() {
+          let input = document.createElement('input');
+          input.type = 'file';
+          input.multiple = true;
+          input.onchange = function (event) {
+              let files = event.target.files;
+              let listaDeArchivos = [];
+              for (let i = 0; i < files.length; i++) {
+                  let archivo = files[i];
+                  let nombreArchivo = "./img/" + archivo.name
+                  listaDeArchivos.push(nombreArchivo);
+                  let reader = new FileReader();
+                  reader.onload = function (e) {
+                      let blob = new Blob([new Uint8Array(e.target.result)]);
+                  };
+                  reader.readAsArrayBuffer(archivo);
+              }
+              let listaJson = JSON.stringify(listaDeArchivos);
+              // GRABA EN LOCAL
+              localStorage.setItem('listaSlide', listaJson);
+              // GRABA EN LA TABLA
+              grabarListaTabla();
+              // RECARCAR
+              recargarPagina()
+          };
+          input.click();
+      }
+      
+      function cargaJsonConTabla() {
+        // Crear un objeto FormData vacío
+        let formData = new FormData();
+
+        // Enviar una petición AJAX para recuperar los datos de la tabla 'fondos'
+        let xhr = new XMLHttpRequest();
+        xhr.open('POST', 'recupera_lista_fondos.php', true);
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                // Obtener la respuesta del servidor
+                let response = JSON.parse(xhr.responseText);
+                // Verificar si se obtuvieron datos válidos
+                if (Array.isArray(response)) {
+                    // Crear una lista para almacenar los fondos
+                    let listaFondosTabla = [];
+                    // Recorrer los datos y agregarlos a la lista
+                    for (let i = 0; i < response.length; i++) {
+                        listaFondosTabla.push(response[i].fondo);
+                    }
+                    // Guardar la lista en Local Storage con la clave 'listaSlide'
+                    localStorage.setItem('listaSlide', JSON.stringify(listaFondosTabla));
+                    // alert('Datos cargados correctamente');
+                    console.log(('Datos cargados correctamente'))
+                } else {
+                    // alert('No se obtuvieron datos válidos');
+                    console.log('No se obtuvieron datos válidos');
+                }
+            }
+        };
+        xhr.send(formData);
+      }
+  
+      function cargaFondoInicial() {
+          let listaJson = localStorage.getItem('listaSlide');
+          let lista = JSON.parse(listaJson);
+          
+          if (Array.isArray(lista) && lista.length > 0) {
+              let primerFondo = lista[0];
+              document.body.style.backgroundImage = `url('${primerFondo}')`;
+          }
+      }
+  
+      function grabarListaTabla() {
+          let listaSlide = JSON.parse(localStorage.getItem('listaSlide'));
+          
+          // Verificar si hay datos en Local Storage
+          if (listaSlide && listaSlide.length > 0) {
+              // Crear un objeto FormData y agregar los datos
+              let formData = new FormData();
+              formData.append('listaSlide', JSON.stringify(listaSlide));
+              
+              // Enviar los datos al archivo PHP usando AJAX
+              let xhr = new XMLHttpRequest();
+              xhr.open('POST', './graba_lista_fondos.php', true);
+              xhr.onreadystatechange = function() {
+              if (xhr.readyState === 4 && xhr.status === 200) {
+                  // alert('Datos grabados correctamente');
+                  console.log('Datos grabados correctamente')
+              }
+              };
+              xhr.send(formData);
+          } else {
+              alert('No hay datos en Local Storage');
+          }
+      }
+  
+      function recargarPagina() {
+          location.reload();
+      }
+      
+      function configuraSlide() {
+        let seccion = document.getElementById("seccionBotonesSlide");
+        seccion.style.display = "block";
+      }
+      // window.addEventListener('DOMContentLoaded', function() {
+      // }
+      
+    
+    </script>
+    <script src='./jquery-3.6.0.min.js'></script> 
+    <script src="./libreria.js"></script>
+    <script src="./index.js"></script>
+
+</head>
+  <body>
+        <!-- MENU -->
+      <div id="logo-container">
+          <img id="logo" src="./img/bitacora.png" />
+      </div>
+      <div id="menu" onmouseleave="hideSubmenu()"  >
+          <div id="seccionPresentaUsuario">
+              <div id="menu-icon" onclick="toggleSubmenu()">&#9776</div> 
+              <div id="submenu">
+                <a onmouseover="despliegaMensaje('Logearse')" onclick="despliegaLogin()" href="#">Login</a>
+                <a onmouseover="despliegaMensaje('Deslogearse')"onclick="logout()" href="#">Logout</a>
+                <a onmouseover="despliegaMensaje('Registro')"onclick="cargaModalRegistro()" href="#">Registrarse</a>
+                  <ul>
+                    <li><a href="#" onmouseover="despliegaMensaje('Edicion de Bitacoras del Usuario')" onclick="editaBitacora()">Edicion</a></li>
+                    <li><a href="#" onmouseover="despliegaMensaje('Graba en el host lista archivos')" onclick="grabaLocalListaArchivos()">selecciona</a></li>
+                    <li><a href="#"onmouseover="despliegaMensaje('Activa slide de Fondo')" onclick="slideFondo(true, 10)">Activa</a></li>
+                    <li><a href="#" onmouseover="despliegaMensaje('Desactiva slide de Fondo')" onclick="slideFondo(false, 4)">Desactiva</li>
+                  </ul>
+                <a href="#" onmouseover="despliegaMensaje('En desarrollo Julio 2023')" >Ayuda</a>
+                  <ul>
+                    <li><a href="#" onmouseover="despliegaMensaje('Edicion Usuarios')" onclick="validaLogeado('usuarios')">Usuarios</a></li>
+                    <li><a href="#" onmouseover="despliegaMensaje('Backup Base Datos Archivos')" onclick="event.preventDefault();validaLogeado('bckp')">Backup</a></li>
+                  </ul>
+                  <p id="userEmail" onclick="presentaUsuarioActivo();"></p>
+              </div>
+          </div>
+      </div>
+      <!-- SLIDE -->
+      <div id="background-container" class="background-container"></div>
+      <!-- FORMULARIO -->
+      <div id="seccionFormulario" style="display: none;">
+      <!-- <div id="seccionFormulario"> -->
+          <form id="formDesarrollo">
+            <div id="seccionTitulos">
+              <select onchange="obtenerIdTitulo();desplegarTituloEdicion()" name="listaTitulos" id="listaTitulos" autofocus>
+                <option value="" disabled selected>Selecciona título del contenido</option>
+              </select>
+              <section id="seccionActivacionBotones" class="seccionActivaBotones">
+                  <button onmouseover="despliegaMensaje('activa y desactiva Edicion')" id="btnDespliegaEdicion" class="button-img" onclick="event.preventDefault();changeButton(this);"></button>
+                  <button onmouseover="despliegaMensaje('activa y desactiva Audio')" id="btnDespliegaAudio" class="button-img" onclick="event.preventDefault();changeButton(this);"></button>
+                  <button onmouseover="despliegaMensaje('activa y desactiva Respaldo')" id="btnDespliegaGraban" class="button-img" onclick="event.preventDefault();changeButton(this);"></button>
+                  <button onmouseover="despliegaMensaje('Cierra edicion en curso')" id="btnCierraEdit" class="button-img" onclick="event.preventDefault();cierraEdicionBit()"></button>
+                </section>
+              <section class="seccionBotonesTitulos">
+                <div class="seccionBotonesDatos" style="display: none;">
+                  <button onmouseover="despliegaMensaje('Edicion del Nuevo Titulo')"id="btnPresentaTit" class="btnTitulos" type="button" onclick="habilitaGrabaDes(false);habilitaGrabaTit(true);activaNuevoEditaTitulo()">&#x25bc</button>
+                  <button onmouseover="despliegaMensaje('Oculta ingreso Nombre del Titulo')"id="btnOcultaTit" class="btnTitulos" type="button" onclick="habilitaGrabaDes(true);habilitaGrabaTit(false);setEditaTitulo(false);ocultaSeccionTitulo();">&#x25b2</button>
+                  <button onmouseover="despliegaMensaje('Elimina el titulo y su desarrollo')" id="btnEliminaTit" class="btnTitulos borra" onclick="setEditaTitulo(true);eliminaDesarrolloUsuario(event)">&#x2718</button>
+                  <button onmouseover="despliegaMensaje('Edicion del Nombre del titulo')"id="btnEditaTit" class="btnTitulos graba" type="button" onclick="setEditaTitulo(true);presentaEditaTitulo(true)">&#x270d</button>
+                  <button onmouseover="despliegaMensaje('Graba Nombre del titulo')" id="btnGrabaTit" class="btnTitulos graba"  onclick="validaEditaNuevo(event)">&#x2714</button>
+                  <button  onmouseover="despliegaMensaje('Graba el desarrollo del titulo')" id="btnGragaDesarrollo" class="btnTitulos" onclick="grabaDesarrollo(event)"></button>
+                </div>
+                <div class="seccionBotonesAudio" style="display: none;">
+                  <button  id="btnRec" class="btnTitulos" onclick="event.preventDefault();grabarAudio() " >&#x229a</button>
+                  <!-- <button  id="btnRec" class="btn-grabar btnTitulos">&#x229a</button> -->
+                  <!-- <button  id="btnStop" class="btnTitulos" onclick="event.preventDefault();detenerGrabacion()" >&#x25fc</button> -->
+                  <button  id="btnStop" class="btnTitulos" onclick="event.preventDefault();detenerHabla()" >&#x25fc</button>
+                  
+                  <!-- <button  id="btnPausa" class="btnTitulos " onclick="event.preventDefault();pausarAudio()" >&#x25eb</button> -->
+                  <button  id="btnPausa" class="btnTitulos " onclick="event.preventDefault();pausarHabla()">&#x25eb</button>
+                  
+                  <!-- <button  id="btnPlay" class="btnTitulos" onclick="event.preventDefault();reproducirAudio()">&#x25ba</button> -->
+                  <button  id="btnPlay" class="btnTitulos" onclick="event.preventDefault();hablaDesarrollo()">&#x25ba</button>
+                
+                </div>
+                <div class="seccionBackp" style="display: none;">
+                  <button onmouseover="despliegaMensaje('Lee a Json las tabla y las carga en LocalS')" id="btnLeeJson" class="btnTitulos" onclick="event.preventDefault();obtieneDesarrolloJson();obtieneUsuariosJson()"></button>
+                  <button onmouseover="despliegaMensaje('Graba bckp base Datos en archivo Json desde localS')" id="btnGrabaJson" class="btnTitulos" onclick="event.preventDefault();grabaArchivoBaseSql()"></button>
+                  <button onmouseover="despliegaMensaje('lee de archivo Json y carga localS')" id="btnCargaJson" class="btnTitulos" onclick="event.preventDefault();cargaBaseConJson()"></button>
+                  <button onmouseover="despliegaMensaje('graba desde LocalS a la base completa SQL')" id="btnGrabaBase" class="btnTitulos" onclick="event.preventDefault();grabaJsonBaseDatos()"></button>
+                  <button onmouseover="despliegaMensaje('GRABA BASE DE DATOS A ARCHIVO BCKP JSON ')" id="btnGrabaArchivo" class="btnTitulos" onclick="event.preventDefault();grabaArchivoBaseDatos()"></button>
+                  <button onmouseover="despliegaMensaje('CARGA ARCHIVO BCKP JSON EN BASE DE DATOS')" id="btnCargaArchivo" class="btnTitulos" onclick="event.preventDefault();cargaArchivoBaseDatos()"></button>
+                  <section  class="SeccionAnalizaArch">
+                    <!-- <button onclick="validarArchivoJson()" >valida Backp</button> -->
+                    <h4>Análisis de Archivo JSON</h4>
+                    <input type="file" id="archivoInput" accept=".json">
+                    <button onclick="analizarArchivo()">Analizar</button>
+                  </section>
+                </div>
+              </section>
+            </div>
+            <div id="seccionTitulo" style="display: none;">
+              <input id="inputTitulo" type="text" placeholder="Ingresa un nuevo Titulo">
+            </div>
+            <!-- RECIBEN DATOS PERO ESTAN OCULTOS -->
+            <input id="idUsu" name="idUsu" type="text" style="display: none">
+            <input id="idTit" name="idTit" type="text" style="display: none">
+            <textarea id="textoDes" class='contenido' name="textoDes" placeholder="Ingresa el texto a desarrollar"></textarea>
+            <div class="seccionBotones">
+              <!-- <button id="btnGragaDesarrollo" onclick="grabaDesarrollo(event)">Graba desarrollo</button> -->
+              <!-- <button id="btnEliminaDesarrollo" onclick="event.preventDefault();eliminaDesarrolloUsuario()" class="eliminar-btn">Eliminar</button> -->
+            </div>
+        </form>
+      </div>
+      <!-- MODAL LOGIN -->
+      <div id="modalLogin" class="modal">
+          <form class="modal-content">
+            <h1>Inicio de sesión</h1>
+            <div class="centrado">
+              <div>
+                  <input type="email" id="correo" name="correo" placeholder="Correo electrónico"><br>
+              </div>
+              <div>
+                  <input type="password" id="contrasena" name="contrasena" placeholder="Contraseña"><br>
+              </div>
+            </div>
+            <br>
+            <input type="submit" onclick="event.preventDefault();validarFormularioLogin()" value="Iniciar Sesion"></input>
+            <button onclick="cerrarModalLogin()">Cancelar</button>
+          </form>
+      </div>
+      <!-- MODAL REGISTRO -->
+      <div id="modalRegistro" class="modal" style="display: none;">
+        <div class="centrado">
+          <h2>Registro de Usuario</h2>
+          <form id="formularioRegistro"  class="modal-content" method="post">
+            <div class="centrado">
+              <label for="correoReg">Correo electrónico</label>
+              <input type="email" id="correoReg" name="correo" required>
+            </div>
+            <div class="centrado">
+              <label for="contrasenaReg">Contraseña</label>
+              <input type="password" id="contrasenaReg" name="contrasena" required>
+            </div>
+            <div class="centrado">
+              <label for="confirmarContrasenaReg">Confirmar contraseña</label>
+              <input type="password" id="confirmarContrasenaReg" name="confirmarContrasena" required>
+            </div>
+            <br>
+            <button type="submit" onclick="event.preventDefault(); registrarUsuario()">Registrar</button>
+            <button type="button" onclick="cerrarModalReg()">Cancelar</button>
+          </form>
+        </div>
+      </div>
+      
+      <!-- FOOTER -->
+      <footer>
+          <p id="seccionMensajes"></p>
+      </footer>
+  </body>
+</html>

@@ -1,0 +1,751 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de usuarios</title>
+    
+    <style>
+        .disabled-input {
+            pointer-events: none;
+            opacity: 0.6;
+        }
+        body {
+        font-family: Arial, sans-serif;
+        margin: 2vw;
+    }
+
+    h1 {
+        font-size: 5vw;
+        margin-bottom: 2vw;
+    }
+
+    form {
+        margin-bottom: 2vw;
+    }
+
+    label {
+        display: block;
+        margin-bottom: 1vw;
+    }
+
+    input[type="text"],
+    input[type="password"],
+    textarea {
+        width: 90vw;
+        padding: 1vw;
+        margin-bottom: 1vw;
+        font-size: 4vw;
+    }
+
+    div {
+        margin-bottom: 1vw;
+    }
+
+    button {
+        padding: 1vw;
+        margin-right: 1vw;
+        font-size: 2vw;
+    }
+
+    table {
+        border-collapse: collapse;
+        width: 100%;
+        margin-bottom: 2vw;
+        font-size: 2vw;
+    }
+
+    th, td {
+        border: 1px solid #ddd;
+        padding: 1vw;
+        text-align: left;
+    }
+
+    button#btnTablaAlocal {
+        margin-bottom: 2vw;
+    }
+        .agrega {
+            background-color: rgb(27, 137, 27);
+            font-size: 2vw !important;
+        }
+        .elimina{
+            background-color: rgb(213, 55, 55);
+            color: white;
+            font-size: 2vw !important;
+
+        }
+        .edita{
+            background-color: rgb(94, 94, 191);
+            font-size: 2vw !important;
+
+        }
+        .botonesForm{
+            font-size: 4vw !important;
+            border-radius: 2vw;
+        }
+        .seccionBotones{
+            text-align: center;
+            margin: 0 auto;
+            justify-content: center;
+        }
+    </style>
+    
+    <script src="./libreria.js"></script>
+</head>
+<body>
+    <h1>Gestión de usuarios</h1> 
+    <form id="formIngreso" method="POST" action="./actualiza_usuario.php">
+        <label for="idUsu" class="disabled-input">ID de usuario:</label>
+        <input class="disabled-input" type="text" name="idUsu" id="idUsu" required><br>
+        <label for="usuario">Usuario:</label>
+        <input type="text" name="usuario" id="usuario" required><br>
+        <label for="gps">GPS:</label>
+        <input type="text" name="gps" id="gps"><br>
+        <label for="psw">Password:</label>
+        <input type="password" autocomplete="current-password" name="psw" id="psw"><br>
+        <label for="obs">Observaciones:</label>
+        <textarea name="obs" id="obs"></textarea><br>
+        <label for="accesos">Accesos:</label>
+        <input type="text" name="accesos" id="accesos"><br>
+        <div  class="seccionBotones">
+            <button class="agrega botonesForm" onclick="agregarUsuario()">Agrega Usuario Local</button>
+            <button class="edita botonesForm" onclick="actualizarUsuario()">Actualiza usuario Local</button>
+        </div>
+        <div class="seccionBotones">
+            <button class="elimina botonesForm" type="reset">Reset</button>
+        </div>
+        <div  class="seccionBotones">
+            <button class="agrega botonesForm" onclick="grabaRegistro()">Agregar Usuario BD</button>
+            <button class="edita botonesForm" type="submit">Actualiza Usuario BD</button>
+        </div>
+    </form>
+    <h2>Usuarios en Local Storage:</h2>
+    <table id="tablaUsuarios">
+        <tr>
+        </tr>
+    </table>
+    <div class="seccionBotones">
+        <button class="agrega botonesForm" onclick="grabaTablaServidor()">Gaba de JS A BD</button>
+        <button class="elimina botonesForm" onclick="vaciarLocal()">Vaciar Local Storage</button>
+        <button class="agrega botonesForm" onclick="grabaUsuariosJson()">Graba Local en archivo Json</button>
+        <input type="file" id="fileInput">
+        <button class="edita botonesForm" type="button" onclick="cargaUsuariosJson()">Cargar Usuarios JSON</button>
+    </div>
+    <h2>Usuarios en Host:</h2>
+    <table id="tablaUsuariosBd"></table>
+    <div class="seccionBotones">
+        <button class="edita botonesForm"  onclick="presentaPhp('./presenta_tabla.php')">ver Tabla Base de Datos</button>
+        <button class="edita botonesForm" id="btnTablaAlocal" onclick="tablaAlocal()">Actualizar tabla en Local</button>
+        <!-- <button class="edita botonesForm" onclick="cargaArchivoUsuariosJson()">Cargar Archivo de Usuarios JSON</button> -->
+    </div>
+    <div class="seccionBotones">
+        <button class="agrega botonesForm" onclick="grabaArchivoTabla()">Guardar Tabla</button>
+        <button class="elimina botonesForm"  onclick="eliminarTabla()">Vaciar Tabla usuarios</button>
+    </div>
+    <form class="seccionBotones" id="formArchivo" method="POST" action="./carga_archivo_usuarios_json.php" enctype="multipart/form-data">
+        <button class="agrega botonesForm" onclick="grabaArchivoTabla()">Graba Tabla en archivo Json</button>
+        <input type="file" name="archivoInput" id="archivoInput">
+        <button class="edita botonesForm" type="submit">Cargar Archivo JSON</button>
+      </form>
+    <script>
+        // AL CARGAR LA PAGINA
+        window.addEventListener("load", function() {
+            mostrarUsuariosEnTablaLocal();
+            obtenerUsuariosYDesplegarEnTabla();
+            presentaId()
+        });
+        function tablaAlocal() {
+            // Realizar una petición AJAX para obtener los datos de la tabla 'usuarios'
+            let xhr = new XMLHttpRequest();
+            xhr.open("GET", "obtener_usuarios.php", true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                try {
+                    // Obtener la respuesta JSON
+                    let response = JSON.parse(xhr.responseText);
+
+                    if (response.success) {
+                    // Guardar los datos en localStorage con el key 'usuarios'
+                    localStorage.setItem("usuarios", JSON.stringify(response.usuarios));
+                    console.log('Datos de la tabla "usuarios" actualizados en localStorage.');
+                    // RECARGA PAGINA PARA ACTUALIZAR
+                    location.reload(true);
+                    } else {
+                    console.log('No se encontraron datos en la tabla "usuarios".');
+                    }
+                } catch (error) {
+                    console.log("Error al analizar la respuesta JSON:", error);
+                    alert("Error al analizar la respuesta JSON:", error);
+                }
+                } else {
+                console.log("Error en la solicitud:", xhr.status);
+                }
+            };
+
+            xhr.onerror = function () {
+                console.log("Error de conexión.");
+            };
+
+            xhr.send();
+        }
+        function obtenerUsuariosYDesplegarEnTabla() {
+            // Realizar una solicitud AJAX a un archivo PHP que obtenga los datos de la base de datos
+            let xhr = new XMLHttpRequest();
+            xhr.open("GET", "obtener_usuarios.php", true);
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    // Obtener los datos de respuesta como un objeto JSON
+                    let response = JSON.parse(xhr.responseText);
+
+                    if (response.success) {
+                        // Obtener la referencia a la tabla
+                        let tablaUsuariosBd = document.getElementById("tablaUsuariosBd");
+                        // Limpiar cualquier contenido previo en la tabla
+                        tablaUsuariosBd.innerHTML = "";
+                        // Crear la fila de encabezado
+                        let encabezado = document.createElement("tr");
+                        encabezado.innerHTML = "<th>ID</th><th>Usuario</th><th>GPS</th><th>Pass</th><th>Acces</th><th>Obs</th><th>Edita</th><th>Elimina</th>";
+                        tablaUsuariosBd.appendChild(encabezado);
+
+                        // Iterar sobre los usuarios y crear las filas de datos
+                        for (let i = 0; i < response.usuarios.length; i++) {
+                            let usuario = response.usuarios[i];
+                            let fila = document.createElement("tr");
+                            fila.innerHTML = "<td>" + usuario.idUsu + "</td><td>" + usuario.usuario + "</td><td>" + usuario.gps + "</td><td>" + usuario.psw + "</td><td>" + usuario.accesos + "</td><td>" + usuario.obs + "</td><td><button class='edita' onclick=\"editarUsuarioBd(this)\">Editar</button></td><td><button class='elimina' onclick=\"eliminarUsuarioTabla(this)\">Eliminar</button></td>";
+
+                            // fila.innerHTML = "<td>" + usuario.idUsu + "</td><td>" + usuario.usuario + "</td><td>" + usuario.gps + "</td><td>" + usuario.psw + "</td><td>" + usuario.accesos + "</td><td>" + usuario.obs + "</td><td><button onclick=\"editarUsuario(" + usuario.idUsu + ")\">Editar</button></td><td><button onclick=\"eliminarUsuarioTa(" + usuario.idUsu + ")\">Eliminar</button></td>";
+                            // fila.innerHTML = "<td>" + usuario.idUsu + "</td><td>" + usuario.usuario + "</td><td>" + usuario.gps + "</td><td>" + usuario.psw + "</td><td>" + usuario.accesos + "</td><td>" + usuario.obs + "</td><td><button onclick=\"editarUsuario(" + usuario.idUsu + ")\">Editar</button></td><td><button onclick=\"eliminarUsuario(" + usuario.idUsu + ")\">Eliminar</button></td>";
+                            tablaUsuariosBd.appendChild(fila);
+                        }
+                    } else {
+                        console.log("Error al obtener los usuarios de la base de datos.");
+                    }
+                }
+            };
+
+            xhr.send();
+        }
+        function presentaPhp(pagina){
+            let nuevaVentana = window.open(pagina, "_blank"); 
+            if (nuevaVentana != null && !nuevaVentana.closed) {
+            nuevaVentana.location.reload();
+            }
+        }
+        function presentaId(){
+            let idUsu=indiceAhora()
+            document.getElementById('idUsu').value=idUsu
+            return idUsu
+        }
+        function presentaTablaPhp(pagina){
+            fetch(pagina)
+            .then(function(response) {
+                return response.text();
+            })
+            .then(function(data) {
+                // Aquí puedes hacer algo con la respuesta de la página PHP
+                console.log(data);
+            })
+            .catch(function(error) {
+                console.log('Error:', error);
+            });
+            
+        }
+        function agregarUsuario() {
+            // VALIDAR INGRESO TODOS LOS DATOS
+           let validado=validaInputs()
+           if(!validado){
+                alert('debe ingresar todos los datos')
+                return
+           }
+            // let idUsu = document.getElementById('idUsu').value;
+            let idUsu = presentaId();
+            let usuario = document.getElementById('usuario').value;
+            let gps = document.getElementById('gps').value;
+            let psw = document.getElementById('psw').value;
+            let obs = document.getElementById('obs').value;
+            let accesos = document.getElementById('accesos').value.split(',');
+            let usuarios = obtenerUsuarios();
+            let usuarioExistente = usuarios.find(user => user.idUsu === idUsu || user.usuario === usuario);
+            if (usuarioExistente) {
+                alert('El ID de usuario o el nombre de usuario ya existen. Introduce valores únicos.');
+                return;
+            }
+            let nuevoUsuario = {
+                idUsu: idUsu,
+                usuario: usuario,
+                gps: gps,
+                psw: psw,
+                accesos: accesos,
+                obs: obs
+            };
+            usuarios.push(nuevoUsuario);
+            guardarUsuarios(usuarios);
+            // grabaRegistro()
+            console.log('Nuevo usuario guardado en el almacenamiento local.');
+            mostrarUsuariosEnTablaLocal();
+            limpiarFormulario();
+            location.reload(true);
+        }
+        function actualizarUsuario() {
+            let usuarioActual = obtenerUsuarioActual();
+
+            if (!usuarioActual) {
+                alert('No hay ningún usuario seleccionado para actualizar.');
+                return;
+            }
+            
+            let usuario = document.getElementById('usuario').value;
+            let gps = document.getElementById('gps').value;
+            let psw = document.getElementById('psw').value;
+            let obs = document.getElementById('obs').value;
+            let accesos = document.getElementById('accesos').value.split(',');
+
+            let usuarios = obtenerUsuarios();
+
+            let usuarioExistente = usuarios.find(user => user.usuario === usuario && user.idUsu !== usuarioActual.idUsu);
+
+            if (usuarioExistente) {
+                alert('El nombre de usuario ya existe. Introduce un valor único.');
+                return;
+            }
+
+            usuarios.forEach((user, index) => {
+                if (user.idUsu === usuarioActual.idUsu) {
+                usuarios[index].idUsu = idUsu;
+                usuarios[index].usuario = usuario;
+                usuarios[index].gps = gps;
+                usuarios[index].psw = psw;
+                usuarios[index].obs = obs;
+                usuarios[index].accesos = accesos; // Corregido: accesos en minúscula
+                return;
+                }
+            });
+
+            guardarUsuarios(usuarios);
+
+            console.log('Usuario actualizado en el almacenamiento local.');
+
+            mostrarUsuariosEnTablaLocal();
+            limpiarFormulario();
+            guardarUsuarioActual(null);
+            // actualizarUsuarioBd()
+            location.reload(true);
+        }
+        function mostrarUsuariosEnTablaLocal() {
+            let usuarios = obtenerUsuarios();
+                let tablaUsuarios = document.getElementById('tablaUsuarios');
+                if (!tablaUsuarios) {
+                    console.log('El elemento tablaUsuarios no se encontró en el DOM.');
+                    return;
+                }
+                tablaUsuarios.innerHTML = '';
+                // Crear fila de encabezados
+                let encabezados = ['ID', 'Usuario', 'GPS', 'Pass', 'Acces', 'Obs', 'Edita', 'Elimina'];
+                let filaEncabezados = document.createElement('tr');
+
+                for (let i = 0; i < encabezados.length; i++) {
+                    let celda = document.createElement('th');
+                    celda.textContent = encabezados[i];
+                    filaEncabezados.appendChild(celda);
+                }
+                tablaUsuarios.appendChild(filaEncabezados);
+                // Agregar filas de datos
+                for (let i = 0; i < usuarios.length; i++) {
+                let usuario = usuarios[i];
+
+                let fila = document.createElement('tr');
+                let celdaIdUsu = document.createElement('td');
+                let celdaUsuario = document.createElement('td');
+                let celdaGps = document.createElement('td');
+                let celdaPsw = document.createElement('td');
+                let celdaAccesos = document.createElement('td');
+                let celdaObs = document.createElement('td');
+                let celdaEditar = document.createElement('td');
+                let celdaEliminar = document.createElement('td');
+
+                celdaIdUsu.textContent = usuario.idUsu;
+                celdaUsuario.textContent = usuario.usuario;
+                celdaGps.textContent = usuario.gps;
+                celdaPsw.textContent = usuario.psw;
+                celdaAccesos.textContent = usuario.accesos;
+                celdaObs.textContent = usuario.obs;
+
+                let botonEditar = document.createElement('button');
+                botonEditar.textContent = 'Editar';
+                botonEditar.addEventListener('click', function() {
+                    editarUsuario(usuario);
+                });
+
+                let botonEliminar = document.createElement('button');
+                botonEliminar.textContent = 'Eliminar';
+                botonEliminar.classList.add('elimina');
+                botonEliminar.addEventListener('click', function() {
+                    eliminarUsuario(usuario);
+                });
+                celdaEditar.appendChild(botonEditar);
+                botonEditar.classList.add('edita')
+                celdaEliminar.appendChild(botonEliminar);
+
+                fila.appendChild(celdaIdUsu);
+                fila.appendChild(celdaUsuario);
+                fila.appendChild(celdaGps);
+                fila.appendChild(celdaPsw);
+                fila.appendChild(celdaAccesos);
+                fila.appendChild(celdaObs);
+                fila.appendChild(celdaEditar);
+                fila.appendChild(celdaEliminar);
+                tablaUsuarios.appendChild(fila);
+            }
+        }
+        function editarUsuario(usuario) {
+            guardarUsuarioActual(usuario);
+
+            document.getElementById('idUsu').value = usuario.idUsu;
+            document.getElementById('usuario').value = usuario.usuario;
+            document.getElementById('gps').value = usuario.gps;
+            document.getElementById('psw').value = usuario.psw;
+            document.getElementById('obs').value = usuario.obs;
+            document.getElementById('accesos').value = usuario.accesos;
+        }
+        function eliminarUsuario(usuario) {
+            let usuarios = obtenerUsuarios();
+
+            for (let i = 0; i < usuarios.length; i++) {
+                if (usuarios[i].idUsu === usuario.idUsu && usuarios[i].usuario === usuario.usuario) {
+                    usuarios.splice(i, 1);
+                    guardarUsuarios(usuarios);
+                    console.log('Usuario eliminado del almacenamiento local.');
+                    mostrarUsuariosEnTablaLocal();
+                    break;
+                }
+            }
+        }
+        function limpiarFormulario() {
+            document.getElementById('idUsu').value = '';
+            document.getElementById('usuario').value = '';
+            document.getElementById('gps').value = '';
+            document.getElementById('psw').value = '';
+            document.getElementById('obs').value = '';
+            document.getElementById('accesos').value = '';
+        }
+        function obtenerUsuarios() {
+        let usuarios = localStorage.getItem('usuarios');
+
+        if (usuarios) {
+            return JSON.parse(usuarios);
+        } else {
+            return [];
+        }
+    }
+        function guardarUsuarios(usuarios) {
+        localStorage.setItem('usuarios', JSON.stringify(usuarios));
+    }
+        function obtenerUsuarioActual() {
+        let usuarioActual = localStorage.getItem('usuarioActual');
+
+        if (usuarioActual) {
+            return JSON.parse(usuarioActual);
+        } else {
+            return null;
+        }
+    }
+        function guardarUsuarioActual(usuario) {
+            localStorage.setItem('usuarioActual', JSON.stringify(usuario));
+        }
+        function guardarUsuariosEnBD() {
+            location.reload(true);
+            // CARGA LA TABLA
+        // Obtener los datos del Local Storage
+            let usuarios = obtenerUsuarios();
+            // Convertir los datos en formato JSON
+            let usuariosJSON = JSON.stringify(usuarios);
+            // Enviar los datos al archivo "usuarios_graba.php" mediante una petición AJAX
+            let xhr = new XMLHttpRequest();
+            xhr.open("POST", "obtener_usuarios.php", true);
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+            console.log(xhr.responseText);
+            }
+                    };
+                xhr.send("usuarios=" + encodeURIComponent(usuariosJSON));
+        }
+        function grabaUsuariosTabla() {
+    // Obtener los datos de localStorage
+    let usuarios = localStorage.getItem("usuarios");
+    if (!usuarios) {
+        console.log("No se encontraron datos en localStorage.");
+        return;
+    }
+
+    // Realizar una petición AJAX para enviar los datos a la página PHP
+    let xhr = new XMLHttpRequest();
+    xhr.open("POST", "usuarios_graba.php", true);
+    xhr.setRequestHeader("Content-Type", "application/json");
+
+    xhr.onload = function () {
+        if (xhr.status === 200) {
+            console.log(xhr.responseText);
+            // Actualizar la tabla de usuarios después de grabar los datos
+            obtenerUsuariosYDesplegarEnTabla();
+        } else {
+            console.log("Error en la solicitud:", xhr.status);
+        }
+    };
+
+    xhr.onerror = function () {
+        console.log("Error de conexión.");
+    };
+
+    // Agrega var_dump para verificar los datos antes de enviarlos al servidor
+    console.log("Datos de usuarios a enviar:", JSON.parse(usuarios));
+
+    // Enviar los datos de localStorage a la página PHP
+    xhr.send(JSON.stringify({ usuarios: usuarios }));
+}
+        function reseteo() {
+            // Obtener el formulario
+            let form = document.getElementById('formIngreso');
+            // Restablecer los valores predeterminados del formulario
+            form.reset();
+            document.getElementById('usuario').focus()
+        }
+        function validaInputs() {
+            // Obtener el formulario
+            let form = document.getElementById('formIngreso');
+            // Obtener todos los elementos de entrada del formulario
+            let inputs = form.getElementsByTagName('input');
+            // Verificar si todos los campos están llenos
+            for (let i = 0; i < inputs.length; i++) {
+                if (inputs[i].value === '') {
+                return false; // Si algún campo está vacío, retornar falso
+                }
+            }
+
+            return true; // Si todos los campos están llenos, retornar verdadero
+        }
+        function grabaRegistro() {
+            let idUsu = presentaId();
+            let usuario = document.getElementById('usuario').value;
+            let gps = document.getElementById('gps').value;
+            let psw = document.getElementById('psw').value;
+            let obs = document.getElementById('obs').value;
+            let accesos = document.getElementById('accesos').value.split(',');
+            // Convertir el objeto de usuario a JSON
+            let usuarioGrabar = {
+                idUsu,
+                usuario,
+                accesos,
+                obs,
+                gps,
+                psw
+            };
+            let validado=validaInputs()
+            if(!validado){
+                alert('ingrese todos los datos')
+                return
+            }
+            console.log('usuario Json', usuarioGrabar);
+            let usuarioJson = JSON.stringify(usuarioGrabar);
+            console.log('usuario Json', usuarioJson);
+            // Realizar una petición AJAX para enviar los datos a la página PHP
+            let xhr = new XMLHttpRequest();
+            xhr.open("POST", "./graba_usuario.php", true);
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.onreadystatechange = function () {
+                    if (xhr.readyState === 4) {
+                    if (xhr.status === 200) {
+                        console.log(xhr.responseText);
+                    } else {
+                        console.log("Error en la solicitud:", xhr.status);
+                    }
+                }
+            };
+            // Enviar los datos de usuario a la página PHP
+            xhr.send(usuarioJson);
+            presentaId()
+            mostrarUsuariosEnTablaLocal();
+            obtenerUsuariosYDesplegarEnTabla()
+            location.reload(true);
+
+        }
+        function grabaTablaServidor() {
+            // Obtener los datos del Local Storage
+            var usuarios = JSON.parse(localStorage.getItem('usuarios'));
+            // debugger
+            // Verificar si se obtuvieron los datos correctamente
+            if (usuarios && Array.isArray(usuarios)) {
+                // Crear un objeto FormData para enviar los datos al script PHP
+                var formData = new FormData();
+                formData.append('usuarios', JSON.stringify(usuarios));
+
+                // Realizar la solicitud AJAX al script PHP
+                fetch('./graba_usuarios.php', {
+                method: 'POST',
+                body: formData
+                })
+                .then(function(response) {
+                    return response.text();
+                })
+                .then(function(result) {
+                    console.log(result); // Mostrar el resultado en la consola
+                })
+                .catch(function(error) {
+                    console.error(error); // Mostrar cualquier error en la consola
+                });
+            } else {
+                console.log('Los datos del Local Storage no son válidos');
+            }
+            // actualiza pantalla
+            location.reload(true);
+        }
+        function eliminarUsuarioTabla(id) {
+            let fila = id.parentNode.parentNode; // Obtener la fila padre del botón
+            let idUsu = fila.cells[0].textContent; // Obtener el valor del ID del usuario en la primera celda
+            if (confirm("¿Estás seguro de que deseas eliminar este usuario? " + idUsu)) {
+
+                // Realizar una petición AJAX para eliminar el usuario
+                let xhr = new XMLHttpRequest();
+                xhr.open("POST", "./eliminar_usuario.php", true);
+                xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+                xhr.onreadystatechange = function() {
+                    if (xhr.readyState === 4) {
+                        if (xhr.status === 200) {
+                            console.log(xhr.responseText);
+                            // Actualizar la tabla después de eliminar el usuario
+                            obtenerUsuariosYDesplegarEnTabla();
+                        } else {
+                            console.log("Error en la solicitud:", xhr.status);
+                        }
+                    }
+                };
+
+                // Crear el parámetro de la solicitud con el ID del usuario
+                let params = "idUsu=" + encodeURIComponent(idUsu);
+                // Enviar el parámetro en la solicitud
+                xhr.send(params);
+            }
+    }
+        function editarUsuarioBd(id){
+                let fila = id.parentNode.parentNode; // Obtener la fila padre del botón
+                
+                let idUsu = fila.cells[0].textContent; // Obtener el valor del ID del usuario en la primera celda
+                let usuario=fila.cells[1].textContent;
+                let gps=fila.cells[2].textContent;
+                let psw=fila.cells[3].textContent;
+                let obs=fila.cells[4].textContent;
+                let accesos=fila.cells[5].textContent;
+
+                document.getElementById('idUsu').value = idUsu;
+                document.getElementById('usuario').value = usuario;
+                document.getElementById('gps').value = gps;
+                document.getElementById('psw').value = psw;
+                document.getElementById('obs').value = obs;
+                document.getElementById('accesos').value = accesos; 
+        
+            }
+        function eliminarTabla() {
+            let confirma=confirm('esta seguro de vaciar la tabla?')
+            if(!confirma){
+                return
+            }
+            // Realizar una solicitud AJAX para eliminar la tabla
+            var xhr = new XMLHttpRequest();
+            xhr.open("POST", "./elimina_tabla.php", true);
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    // alert(xhr.responseText); // Mostrar respuesta del servidor
+                    // alert('tabla usuarios vacia')
+                    console.log('tabla usuarios vacia');
+                }
+            };
+            xhr.send();
+            location.reload(true);
+            
+        }
+        function vaciarLocal() {
+            let confirma=confirm('esta seguro de vaciar local storage?')
+            if(!confirma){
+                return
+            }
+            localStorage.removeItem('usuarios');
+            console.log("Se ha vaciado el local storage para la clave 'usuarios'.");
+            location.reload(true);
+        }
+        function grabaUsuariosJson() {
+            // Obtener los datos de 'usuarios' almacenados en el local storage
+            var usuarios = JSON.parse(localStorage.getItem('usuarios'));
+
+            // Verificar si existen datos de usuarios en el local storage
+            if (!usuarios) {
+                console.log("No se encontraron datos de usuarios en el local storage.");
+                return;
+            }
+
+            // Convertir los datos de usuarios a formato JSON
+            var jsonData = JSON.stringify(usuarios);
+
+            // Crear un objeto Blob con los datos JSON
+            var blob = new Blob([jsonData], { type: 'application/json' });
+
+            // Crear una URL para el objeto Blob
+            var blobUrl = URL.createObjectURL(blob);
+
+            // Crear un enlace de descarga
+            var link = document.createElement('a');
+            link.href = blobUrl;
+            link.download = 'usuarios.json';
+            link.click();
+
+            // Liberar la URL del objeto Blob
+            URL.revokeObjectURL(blobUrl);
+        }
+        function cargaUsuariosJson() {
+            var fileInput = document.getElementById('fileInput');
+            var file = fileInput.files[0];
+            var reader = new FileReader();
+            reader.onload = function(event) {
+                var jsonData = event.target.result;
+                // Guardar los datos en el local storage
+                localStorage.setItem('usuarios', jsonData);
+
+                console.log("Datos de usuarios cargados en el local storage.");
+            };
+            reader.readAsText(file);
+            location.reload(true);
+        }
+        function grabaArchivoTabla() {
+            // Realizar una solicitud AJAX para generar el archivo JSON
+            var xhr = new XMLHttpRequest();
+            xhr.open("GET", "./graba_archivo_usuarios.php", true);
+            xhr.responseType = "blob";
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                // Obtener el objeto Blob de la respuesta
+                var blob = xhr.response;
+
+                // Crear un enlace de descarga
+                var link = document.createElement('a');
+                link.href = window.URL.createObjectURL(blob);
+                link.download = 'usuariosTabla.json';
+                link.click();
+                }
+            };
+            xhr.send();
+        }
+        function cargaArchivoUsuariosJson() {
+            debugger
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', './carga_archivo_usuarios_json.php', true);
+            xhr.onreadystatechange = function() {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                console.log(xhr.responseText);
+                }
+            };
+            xhr.send();
+        }
+    </script>
+</body>
+</html>
